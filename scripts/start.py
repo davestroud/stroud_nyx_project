@@ -20,9 +20,9 @@ rate_df['timestamp'] = pd.to_datetime(rate_df.timestamp) #I like time stamps.
 # rate_df['year'] = pd.DatetimeIndex(small_rate_df['timestamp']).year
 
 #Poking around the movie df
-mov_df.describe()
-mov_df.columns
-mov_df.isnull().sum()
+# mov_df.describe()
+# mov_df.columns
+# mov_df.isnull().sum()
 
 #How many movies are there?
 print("How many movies were there\n\n", len(mov_df['movieId'].unique()))
@@ -35,6 +35,7 @@ print("How many movies were there\n\n", len(mov_df['movieId'].unique()))
 
 # How many user rated a movie?
 print(len(rate_df['userId'].unique()))
+# Count how many reviews per user
 
 
 # rate_df['year'] = pd.DatetimeIndex(small_rate_df['timestamp']).year
@@ -49,7 +50,7 @@ small_rate_df = rate_df.iloc[:2000, :]
 mov_rating = rate_df.groupby(['movieId'], as_index=False)
 avg_rating = mov_rating.agg({'rating':'mean'})
 avg_rating.sort_values('rating', ascending=False)
-print(avg_rating.head(20))
+# print(avg_rating.head(20))
 
 #%%
 
@@ -61,7 +62,7 @@ print(avg_rating.head(20))
 #First, lets pivot this df so the user is rows and the movid id is the columns. 
 # Looking at a smaller subset first as doing the whole thing breaks my comp
  
-small_rate_df = rate_df.iloc[:200000, :]
+small_rate_df = rate_df.iloc[:20000, :]
 small_rate_pivot = small_rate_df.pivot(index='userId', 
 										columns='movieId', 
 										values='rating').fillna(0)
@@ -83,7 +84,14 @@ results_df = pd.DataFrame(predictions_mat, columns=small_rate_pivot.columns)
 
 # %%
 
+# Expected value for each user
+# Go through original rating matrix to predictions
+# when i calc a value of 5, what is it in expected predictions. 
 
 
 # David idea
 # Don't include someone who hasn't made a review in 25 years. 
+
+# %%
+# %%
+rate_df.head(10)
