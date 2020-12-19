@@ -61,7 +61,7 @@ print(avg_rating.head(20))
 #First, lets pivot this df so the user is rows and the movid id is the columns. 
 # Looking at a smaller subset first as doing the whole thing breaks my comp
  
-small_rate_df = rate_df.iloc[:20000, :]
+small_rate_df = rate_df.iloc[:200000, :]
 small_rate_pivot = small_rate_df.pivot(index='userId', 
 										columns='movieId', 
 										values='rating').fillna(0)
