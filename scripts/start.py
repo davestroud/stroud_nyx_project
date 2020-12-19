@@ -3,7 +3,6 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.decomposition import TruncatedSVD
 from sklearn.model_selection import train_test_split
 from scipy.sparse.linalg import svds
 
@@ -25,7 +24,7 @@ rate_df['timestamp'] = pd.to_datetime(rate_df.timestamp) #I like time stamps.
 # mov_df.isnull().sum()
 
 #How many movies are there?
-print("How many movies were there\n\n", len(mov_df['movieId'].unique()))
+print("How many movies were there\n", len(mov_df['movieId'].unique()))
 
 
 # rate_df.describe()
@@ -34,23 +33,21 @@ print("How many movies were there\n\n", len(mov_df['movieId'].unique()))
 #Yay no nulls
 
 # How many user rated a movie?
-print(len(rate_df['userId'].unique()))
+print("\nHow many users rated a movie\n", len(rate_df['userId'].unique()))
 # Count how many reviews per user
+print("\nWhats their distribution of how many times they rated a movie look like?\n\n", rate_df.groupby('userId').size())
+plt.figure(figsize=(16, 16))
+plt.hist(rate_df['userId'], bins=100)
+plt.ylim(ymin=200000)
+plt.show()
 
-
-# rate_df['year'] = pd.DatetimeIndex(small_rate_df['timestamp']).year
 #%%
 
-#For now lets subset this monster so it doesn't take 9 years to load in memory. 
-
-small_rate_df = rate_df.iloc[:2000, :]
-
 # Lets look at ratings for shits and giggles. 
-
 mov_rating = rate_df.groupby(['movieId'], as_index=False)
 avg_rating = mov_rating.agg({'rating':'mean'})
 avg_rating.sort_values('rating', ascending=False)
-# print(avg_rating.head(20))
+
 
 #%%
 
@@ -62,7 +59,7 @@ avg_rating.sort_values('rating', ascending=False)
 #First, lets pivot this df so the user is rows and the movid id is the columns. 
 # Looking at a smaller subset first as doing the whole thing breaks my comp
  
-small_rate_df = rate_df.iloc[:20000, :]
+small_rate_df = rate_df.iloc[:200000, :]
 small_rate_pivot = small_rate_df.pivot(index='userId', 
 										columns='movieId', 
 										values='rating').fillna(0)
@@ -83,6 +80,15 @@ predictions_mat = np.dot(np.dot(U, sigma), Vt) + rating_mean.reshape(-1, 1)
 results_df = pd.DataFrame(predictions_mat, columns=small_rate_pivot.columns)
 
 # %%
+#TODO RMSE calc
+
+def rmse(orig, predictions):
+	x = orig - predictions
+	return sum([y*y for y in x])/len(x)
+
+rsme_result = rsme(rating_matrix, predictions_mat)
+print("The RMSE for the SVD model is {}".format(rsme_result))
+
 
 # Expected value for each user
 # Go through original rating matrix to predictions
@@ -92,6 +98,7 @@ results_df = pd.DataFrame(predictions_mat, columns=small_rate_pivot.columns)
 # David idea
 # Don't include someone who hasn't made a review in 25 years. 
 
+
+
+
 # %%
-# %%
-rate_df.head(10)
