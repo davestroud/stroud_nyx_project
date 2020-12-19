@@ -67,12 +67,13 @@ small_rate_pivot = small_rate_df.pivot(index='userId',
 										values='rating').fillna(0)
 
 
-rating_matrix = small_rate_pivot.to_numpy()
-rating_mean = np.mean(rating_matrix, axis=1)
-rate_demeaned = rating_matrix - rating_mean.reshape(-1, 1)
+rating_matrix = small_rate_pivot.to_numpy()    #make it a matrix
+rating_mean = np.mean(rating_matrix, axis=1)  #Take the mean
+rate_demeaned = rating_matrix - rating_mean.reshape(-1, 1) # subtract mean off matrix
 
-
+#SVD magic here
 U, sigma, Vt = svds(rate_demeaned, k=50)
+#Documentation told me so
 sigma = np.diag(sigma)
 
 predictions_mat = np.dot(np.dot(U, sigma), Vt) + rating_mean.reshape(-1, 1)
@@ -81,3 +82,8 @@ predictions_mat = np.dot(np.dot(U, sigma), Vt) + rating_mean.reshape(-1, 1)
 results_df = pd.DataFrame(predictions_mat, columns=small_rate_pivot.columns)
 
 # %%
+
+
+
+# David idea
+# Don't include someone who hasn't made a review in 25 years. 
