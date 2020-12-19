@@ -86,12 +86,15 @@ def rmse(orig, predictions):
 	x = orig - predictions
 	return sum([y*y for y in x])/len(x)
 
-rsme_result = rsme(rating_matrix, predictions_mat)
-print("The RMSE for the SVD model is {}".format(rsme_result))
+rmse_result = rmse(rating_matrix, predictions_mat)
+print("The RMSE for the SVD model is {}".format(sum(rmse_result)/len(rmse_result)))
 
 
 # Expected value for each user
 # Go through original rating matrix to predictions
+# %%
+
+# %%
 # when i calc a value of 5, what is it in expected predictions. 
 
 
