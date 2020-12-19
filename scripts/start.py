@@ -62,11 +62,22 @@ print(avg_rating.head(20))
 # Looking at a smaller subset first as doing the whole thing breaks my comp
  
 small_rate_df = rate_df.iloc[:20000, :]
-small_rate_pivot_df = small_rate_df.pivot(index='userId', 
+small_rate_pivot = small_rate_df.pivot(index='userId', 
 										columns='movieId', 
 										values='rating').fillna(0)
 
-U, sigma, Vt = svds(R_demeaned, k=50)
 
+rating_matrix = small_rate_pivot.to_numpy()
+rating_mean = np.mean(rating_matrix, axis=1)
+rate_demeaned = rating_matrix - rating_mean.reshape(-1, 1)
+
+
+U, sigma, Vt = svds(rate_demeaned, k=50)
+sigma = np.diag(sigma)
+
+predictions_mat = np.dot(np.dot(U, sigma), Vt) + rating_mean.reshape(-1, 1)
+
+#Back to a dataframe. 
+results_df = pd.DataFrame(predictions_mat, columns=small_rate_pivot.columns)
 
 # %%
