@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from scipy.sparse.linalg import svds
+import timeit
 
 
 mov_df = pd.read_csv("..\data\movies.csv", 
@@ -24,8 +25,8 @@ rate_df['timestamp'] = pd.to_datetime(rate_df.timestamp) #I like time stamps.
 # mov_df.isnull().sum()
 
 #How many movies are there?
-print("How many movies were there\n", len(mov_df['movieId'].unique()))
-
+num_items = len(mov_df['movieId'].unique())
+print("How many movies were there\n", num_items)
 
 # rate_df.describe()
 # rate_df.columns
@@ -33,13 +34,20 @@ print("How many movies were there\n", len(mov_df['movieId'].unique()))
 #Yay no nulls
 
 # How many user rated a movie?
-print("\nHow many users rated a movie\n", len(rate_df['userId'].unique()))
+num_users = len(rate_df['userId'].unique())
+print("\nHow many users rated a movie\n", num_users)
 # Count how many reviews per user
 print("\nWhats their distribution of how many times they rated a movie look like?\n\n", rate_df.groupby('userId').size())
+
 plt.figure(figsize=(16, 16))
 plt.hist(rate_df['userId'], bins=100)
 plt.ylim(ymin=200000)
 plt.show()
+
+#Sparcity
+sparsity=round(1.0-len(rate_df)/float(num_users*num_items),3)
+print("\n what kind of sparcity to we have?\n", str(sparsity*100) + '%' )
+
 
 #%%
 
@@ -50,7 +58,8 @@ avg_rating.sort_values('rating', ascending=False)
 
 
 #%%
-
+print("Time to calc SVD is:\n")
+%%time
 
 # Alright enough EDA crap.  Lets try a basic SVD before we start slicing time windows
 # into crazy little pieces and removing users like JS wants. 
@@ -59,7 +68,7 @@ avg_rating.sort_values('rating', ascending=False)
 #First, lets pivot this df so the user is rows and the movid id is the columns. 
 # Looking at a smaller subset first as doing the whole thing breaks my comp
  
-small_rate_df = rate_df.iloc[:200000, :]
+small_rate_df = rate_df.iloc[:1000000, :]
 small_rate_pivot = small_rate_df.pivot(index='userId', 
 										columns='movieId', 
 										values='rating').fillna(0)
@@ -80,12 +89,13 @@ predictions_mat = np.dot(np.dot(U, sigma), Vt) + rating_mean.reshape(-1, 1)
 results_df = pd.DataFrame(predictions_mat, columns=small_rate_pivot.columns)
 
 # %%
-#TODO RMSE calc
-
+print("Time to calc RMSE is:\n")
+%%time
+# TODO RMSE Calc
 def rmse(orig, predictions):
 	x = orig - predictions
 	return sum([y*y for y in x])/len(x)
-
+	return sqrt()
 rmse_result = rmse(rating_matrix, predictions_mat)
 print("The RMSE for the SVD model is {}".format(sum(rmse_result)/len(rmse_result)))
 
@@ -100,6 +110,11 @@ print("The RMSE for the SVD model is {}".format(sum(rmse_result)/len(rmse_result
 
 # David idea
 # Don't include someone who hasn't made a review in 25 years. 
+# remove last 5 entries. 
+# train 
+
+# Make a mini tool for mini experiments.  Only do whats possible. 
+# 
 
 
 
