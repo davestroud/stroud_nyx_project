@@ -8,9 +8,9 @@ from scipy.sparse.linalg import svds
 import timeit
 
 
-mov_df = pd.read_csv("..\data\movies.csv", 
-					header = 0,
-					dtype={'movieId':'int32', 'title':'str', 'genres':'str'})
+# mov_df = pd.read_csv("..\data\movies.csv", 
+# 					header = 0,
+# 					dtype={'movieId':'int32', 'title':'str', 'genres':'str'})
 rate_df = pd.read_csv("..\data\mov_ratings.csv", 
 					header = 0,
 					dtype={'userId':'int32', 'movieId':'int32', 'rating':'float64'})
@@ -18,6 +18,9 @@ rate_df['timestamp'] = pd.to_datetime(rate_df.timestamp) #I like time stamps.
 
 # Saving for later when i want to group on decades. 
 # rate_df['year'] = pd.DatetimeIndex(small_rate_df['timestamp']).year
+# X = rate_df.drop(["rating"], axis=1)
+# y = rate_df['rating']
+
 
 #Poking around the movie df
 # mov_df.describe()
@@ -25,7 +28,7 @@ rate_df['timestamp'] = pd.to_datetime(rate_df.timestamp) #I like time stamps.
 # mov_df.isnull().sum()
 
 #How many movies are there?
-num_items = len(mov_df['movieId'].unique())
+num_items = len(rate_df['movieId'].unique())
 print("How many movies were there\n", num_items)
 
 # rate_df.describe()
@@ -46,7 +49,7 @@ plt.show()
 
 #Sparcity
 sparsity=round(1.0-len(rate_df)/float(num_users*num_items),3)
-print("\n what kind of sparcity to we have?\n", str(sparsity*100) + '%' )
+print("\n what kind of sparcity do we have?\n", str(sparsity*100) + '%' )
 
 
 #%%
@@ -58,29 +61,30 @@ avg_rating.sort_values('rating', ascending=False)
 
 
 #%%
-print("Time to calc SVD is:\n")
-%%time
+#
+# print("Time to calc SVD is:\n")
+# @%%time
 
-# Alright enough EDA crap.  Lets try a basic SVD before we start slicing time windows
-# into crazy little pieces and removing users like JS wants. 
 # TODO SCIPY SVD MODEL
 
 #First, lets pivot this df so the user is rows and the movid id is the columns. 
 # Looking at a smaller subset first as doing the whole thing breaks my comp
- 
-small_rate_df = rate_df.iloc[:1000000, :]
+
+#Lets split up the data. 
+
+small_rate_df = rate_df.iloc[:200000, :]  # Max i can do is 1000000 before it breaks
 small_rate_pivot = small_rate_df.pivot(index='userId', 
 										columns='movieId', 
 										values='rating').fillna(0)
 
 
-rating_matrix = small_rate_pivot.to_numpy()    #make it a matrix
-rating_mean = np.mean(rating_matrix, axis=1)  #Take the mean
+rating_matrix = small_rate_pivot.to_numpy()   # make it a matrix
+rating_mean = np.mean(rating_matrix, axis=1)  # take the mean
 rate_demeaned = rating_matrix - rating_mean.reshape(-1, 1) # subtract mean off matrix
 
 #SVD magic here
 U, sigma, Vt = svds(rate_demeaned, k=50)
-#Documentation told me so
+#Documentation told me so  
 sigma = np.diag(sigma)
 
 predictions_mat = np.dot(np.dot(U, sigma), Vt) + rating_mean.reshape(-1, 1)
@@ -89,8 +93,7 @@ predictions_mat = np.dot(np.dot(U, sigma), Vt) + rating_mean.reshape(-1, 1)
 results_df = pd.DataFrame(predictions_mat, columns=small_rate_pivot.columns)
 
 # %%
-print("Time to calc RMSE is:\n")
-%%time
+
 # TODO RMSE Calc
 def rmse(orig, predictions):
 	x = orig - predictions

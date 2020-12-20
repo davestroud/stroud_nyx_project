@@ -11,5 +11,6 @@
 
 #Ignore Data Folder
 data/
+scrap_scripts/
 analysis/__pycache__/
 *.txt

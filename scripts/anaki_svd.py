@@ -14,19 +14,34 @@ import timeit
 # 					header = 0,
 # 					dtype={'movieId':'int32', 'title':'str', 'genres':'str'})
 
+
+# TODO read function
+
 rate_df = pd.read_csv("..\data\mov_ratings.csv", 
 					header = 0,
 					dtype={'userId':'int32', 'movieId':'int32', 'rating':'float64'})
 rate_df['timestamp'] = pd.to_datetime(rate_df.timestamp) #I like time stamps.  
 
-X = rate_df.drop(["rating"], axis=1)
-y = rate_df['rating']
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state =42)
 
-
+#%%
 # Creating 70/30 test train split
-train_data, test_data = cross_validate(rate_df, test_size=0.30)
+train_data, test_data = train_test_split(rate_df, test_size = 0.3, random_state = 42)
 
+num_items = len(rate_df['movieId'].unique())
+num_users = len(rate_df['userId'].unique())
+
+
+# Making two matrices out of training and test data. 
+train_matrix = train_data.iloc[:100000, :]
+train_matrix_pivot = train_matrix.pivot(index='userId', 
+										columns='movieId', 
+										values='rating').fillna(0)
+
+
+# test_matrix = test_data.iloc[:200000, :]
+# test_matrix = test_matrix.pivot(index='userId', 
+# 										columns='movieId', 
+# 										values='rating').fillna(0)
 
 
 #%%
@@ -34,13 +49,17 @@ train_data, test_data = cross_validate(rate_df, test_size=0.30)
 
 # TODO Need a user based recoomendation AND item based reccomender
  
-small_rate_df = rate_df.iloc[:1000000, :]
-small_rate_pivot = small_rate_df.pivot(index='userId', 
-										columns='movieId', 
-										values='rating').fillna(0)
+
+# TODO SCIPY SVD MODEL
 
 
-rating_matrix = small_rate_pivot.to_numpy()    #make it a matrix
+# small_rate_df = rate_df.iloc[:1000000, :]
+# small_rate_pivot = small_rate_df.pivot(index='userId', 
+# 										columns='movieId', 
+# 										values='rating').fillna(0)
+
+
+rating_matrix = train_matrix_pivot.to_numpy()    #make it a matrix
 rating_mean = np.mean(rating_matrix, axis=1)  #Take the mean
 rate_demeaned = rating_matrix - rating_mean.reshape(-1, 1) # subtract mean off matrix
 
@@ -52,11 +71,9 @@ sigma = np.diag(sigma)
 predictions_mat = np.dot(np.dot(U, sigma), Vt) + rating_mean.reshape(-1, 1)
 
 #Back to a dataframe. 
-results_df = pd.DataFrame(predictions_mat, columns=small_rate_pivot.columns)
+results_df = pd.DataFrame(predictions_mat, columns=train_matrix_pivot.columns)
 
 # %%
-print("Time to calc RMSE is:\n")
-%%time
 # TODO RMSE Calc
 def rmse(orig, predictions):
 	x = orig - predictions
@@ -64,3 +81,5 @@ def rmse(orig, predictions):
 
 rmse_result = rmse(rating_matrix, predictions_mat)
 print("The RMSE for the SVD model is {}".format(sum(rmse_result)/len(rmse_result)))
+
+# %%
