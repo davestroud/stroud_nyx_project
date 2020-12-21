@@ -83,7 +83,14 @@ genre_rating_df = pd.read_csv("..\data\genre_rating.csv",
 					sep=",",
 					index_col=['ratingYear'])
 
-fig = go.Figure()
+fig = go.Figure(
+	    layout=go.Layout(
+        	title=go.layout.Title(text="Count of Movie Genres"),
+			xaxis=go.layout.XAxis(title="Year"),
+			yaxis=go.layout.YAxis(title="Rating")
+    )
+)
+
 for col in genre_rating_df.columns:
     fig.add_trace(go.Scatter(x=genre_rating_df.index, 
 							 y=genre_rating_df[col].values,
