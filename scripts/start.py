@@ -10,7 +10,8 @@ import timeit
 
 # mov_df = pd.read_csv("..\data\movies.csv", 
 # 					header = 0,
-# 					dtype={'movieId':'int32', 'title':'str', 'genres':'str'})
+# 					
+# type={'movieId':'int32', 'title':'str', 'genres':'str'})
 rate_df = pd.read_csv("..\data\mov_ratings.csv", 
 					header = 0,
 					dtype={'userId':'int32', 'movieId':'int32', 'rating':'float64'})
